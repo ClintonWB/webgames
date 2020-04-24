@@ -1,4 +1,4 @@
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDWhExNdkYQ_TemW4Rp7K_tH3nS3wEw6Ls",
   authDomain: "games-eac51.firebaseapp.com",
   databaseURL: "https://games-eac51.firebaseio.com",
@@ -8,3 +8,5 @@ const firebaseConfig = {
   appId: "1:130501765958:web:aeef0d74998de08094d347",
   measurementId: "G-R9MDXFXQL0"
 };
+
+export {firebaseConfig as default};

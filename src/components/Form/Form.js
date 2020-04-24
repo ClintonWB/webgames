@@ -47,7 +47,7 @@ export default class Form extends Component {
             .limitToLast(10)
             .on('value', message => {
                 this.setState({
-                    list: Object.values(message.val()),
+                    list: (message.val()?Object.values(message.val()):[]),
                 });
             });
     }
