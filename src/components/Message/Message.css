@@ -6,9 +6,11 @@
     background-color: rgba(0, 0, 0, .05);
     text-align: left;
     line-height: 1.7;
-}.message:nth-child(even) {
+}
+.message:nth-child(even) {
     background-color: rgba(0, 0, 0, .025);
-}.message__author {
+}
+.message__author {
     font-weight: 600;
     margin-right: 10px;
     color: rgba(0, 0, 0, 1);
