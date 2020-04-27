@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import logo from '../../images/logo.svg';
 import './App.css';
-import Form from '../Form/Form.js';
+import LoginForm from '../LoginForm/LoginForm.js';
 import firebase from 'firebase';
 import firebaseConfig from '../../config';
 firebase.initializeApp(firebaseConfig);
@@ -11,24 +11,39 @@ class App extends Component {
         super(props);
         this.state = {
             user: null,
+            room_id: '',
+            game_id: ''
         }
     }
     
     componentDidMount() {
         firebase.auth().onAuthStateChanged(user => {
+            if(user !== null){
+                firebase.firestore().collection("users").doc(user.uid).get()
+                    .then((userdata)=>{
+                        if(userdata.exists){
+                            this.setState({
+                                user: user,
+                                room_id: userdata.data().room_id,
+                            })
+                        }
+                });
+            };
             this.setState({
-                user
+                user: user,
             });
         });
     }
     
-    handleSignIn() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup(provider);
+    updateRoomID(room_id){
+        this.setState({
+            room_id: room_id,
+        });
     }
-    
-    handleLogOut() {
-        firebase.auth().signOut();
+    updateGameID(game_id){
+        this.setState({
+            game_id: game_id,
+        });
     }
     
     render() {
@@ -37,25 +52,10 @@ class App extends Component {
         <div className="app__header">
           <img src={logo} className="app__logo" alt="logo" />
           <h2>
-            SIMPLE APP WITH REACT
-          </h2>          { !this.state.user ? (
-            <button
-              className="app__button"
-              onClick={this.handleSignIn.bind(this)}
-            >
-              Sign in
-            </button>
-          ) : (
-            <button
-              className="app__button"
-              onClick={this.handleLogOut.bind(this)}
-            >
-              Logout
-            </button>
-          )}
+            Party Games for Sequestered Folks
+          </h2><LoginForm user={this.state.user} room_id={this.state.room_id} updateRoomID={this.updateRoomID.bind(this)} />
         </div>
         <div className="app__list">
-          <Form user={this.state.user} />
         </div>
       </div>
         );

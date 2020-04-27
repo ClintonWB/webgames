@@ -13,9 +13,10 @@
 .message__author {
     font-weight: 600;
     margin-right: 10px;
-    color: rgba(1, 0, 0, 1);
+    color: rgba(1, 1, 0, 1);
+    font-size:11pt; 
 }
-.message__content {
+.message__body {
     margin-left: 10px;
     color: rgba(0, 0, 0, 1);
 }

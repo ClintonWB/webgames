@@ -1,23 +1,26 @@
 import React, {Component} from 'react';
-import './Form.css';
+import './LoginForm.css';
 import Message from '../Message/Message';
 import firebase from 'firebase';
 
-export default class Form extends Component {
+export default class LoginForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            userName: 'Sebastian',
+            userName: 'Unknown',
             message: '',
             list: [],
         };
         this.messageRef = firebase.database().ref().child('messages');
+    }
+    componentDidMount(){
         this.listenMessages();
     }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.user) {
             this.setState({
-                'userName': nextProps.user.displayName
+                'userName': nextProps.user.uid
             });
         }
     }
@@ -47,7 +50,7 @@ export default class Form extends Component {
             .limitToLast(10)
             .on('value', message => {
                 this.setState({
-                    list: (message.val()?Object.values(message.val()):[]),
+                    list: (Object.values(message.val())),
                 });
             });
     }
