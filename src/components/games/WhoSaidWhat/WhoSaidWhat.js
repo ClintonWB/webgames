@@ -173,7 +173,7 @@ class GamePlay extends Component {
         }
         var player_count = Object.keys(game.players).length;
         var next_player = Object.entries(game.players)
-              .filter(x=>!x.eliminated)
+              .filter(x=>!x[1].eliminated)
               .map(x=>{
                   var y=x[1];
                   y.pid = x[0];
@@ -201,6 +201,10 @@ class GamePlay extends Component {
         }
         if (this.state.selected_user === user.uid ||
             this.state.selected_statement === user.uid){
+            return false;
+        }
+        if (game.players[this.state.selected_user].eliminated ||
+            game.players[this.state.selected_statement].eliminated){
             return false;
         }
         if (this.state.selected_user === this.state.selected_statement){
@@ -272,6 +276,6 @@ class GamePlay extends Component {
 }
 
 function GameHistory(props){
-    return <> GAME HISTORY </>;
+    return <></>;
 }
 
