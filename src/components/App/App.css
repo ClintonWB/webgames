@@ -20,15 +20,28 @@
   margin: 0 auto;
 }
 .app__button {
-  border: 0;
-  border-radius: 0;
-  padding: 10px 20px;
-  color: black;
-  background-color: white;
-  cursor: pointer;
-  opacity: .8;
-  outline: 0;
+    border: 0;
+    border-radius: 15px;
+    padding: 5px 10px;
+    color: black;
+    background-color: white;
+    cursor: pointer;
+    opacity: .8;
+    outline: 0;
 }
+
+.player__list{
+  text-align:left;
+  width:200px;
+}
+
+.player__list li:nth-child(odd) {
+  background-color: lightslategray;
+}
+.player__list li:nth-child(even) {
+  background-color: lightgrey;
+}
+
 .app__button:hover {
   opacity: 1;
 }

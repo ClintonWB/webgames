@@ -1,0 +1,23 @@
+.bucketofpaper_initial_input{
+    width:20em;
+    height:10em;
+}
+
+.bucketofpaper_slip{
+    display: inline;
+    padding:5px 5px;
+    background-color: grey;
+    margin: 10px;
+}
+
+.game_button {
+    border: 0;
+    border-radius: 15px;
+    padding: 5px 10px;
+    color: white;
+    background-color: black;
+    cursor: pointer;
+    opacity: .8;
+    outline: 0;
+    margin: 10px;
+}

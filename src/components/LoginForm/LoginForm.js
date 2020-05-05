@@ -121,12 +121,6 @@ export default class LoginForm extends Component {
                         value={this.state.username_field}
                         onChange={this.updateUsername.bind(this)}
                     />
-                    <button
-                        className="form__button"
-                        onClick={()=>this.createRoom()}
-                        >
-                        Create Room
-                    </button>
                     Room ID: <input
                         className="form__input"
                         type="text"
@@ -138,7 +132,7 @@ export default class LoginForm extends Component {
                         className="form__button"
                         onClick={this.joinRoom.bind(this)}
                         >
-                        Join Room
+                        Create/Join Room
                     </button>
                 </div>
             </div>

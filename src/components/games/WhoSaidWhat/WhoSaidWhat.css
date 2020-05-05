@@ -1,0 +1,35 @@
+.eliminated + label{
+    text-decoration: line-through;
+    color:grey;
+}
+
+.mine + label{
+    color: green;
+}
+
+.whosaidwhat_table{
+    border: 1px solid black;
+    width: 80%;
+    max-width: 50em;
+    min-width: 20em;
+    text-align: center;
+    margin:auto;
+}
+
+.whosaidwhat_column {
+    text-align:left;
+    width: 50%;
+    display: inline-block;
+}
+
+.game_button {
+    border: 0;
+    border-radius: 15px;
+    padding: 5px 10px;
+    color: white;
+    background-color: black;
+    cursor: pointer;
+    opacity: .8;
+    outline: 0;
+    margin: 10px;
+}
