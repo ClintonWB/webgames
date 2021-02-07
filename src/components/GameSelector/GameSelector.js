@@ -1,17 +1,19 @@
 import React, {Component} from 'react';
 import './GameSelector.css';
-import firebase from 'firebase';
+//import firebase from 'firebase';
 
 import WhoSaidWhat from '../games/WhoSaidWhat/WhoSaidWhat.js';
 //import Wavelength from '../games/Wavelength/Wavelength';
 import BucketOfPaper from '../games/BucketOfPaper/BucketOfPaper.js';
 //import WhoSaidWhat from '../games/WhoSaidWhat/WhoSaidWhat';
+import LetterJam from '../games/LetterJam/LetterJam.js';
 
 const game_list = {
-                   WhoSaidWhat: WhoSaidWhat,
+                   "Who Said What": WhoSaidWhat,
 //                   Wavelength: Wavelength,
-                   BucketOfPaper: BucketOfPaper,
+                   "Bucket Of Paper": BucketOfPaper,
 //                   NamesOnHats: NamesOnHats,
+                   "Letter Jam": LetterJam,
 };
 
 export default class GameSelector extends Component {

@@ -1,0 +1,110 @@
+.letterjam-letter{
+    display:inline-block;
+    margin: 2px;
+    border: 1px solid black;
+    padding: 5px;
+    border-radius:5px;
+}
+
+.letterjam-characterpanel{
+    padding:5px;
+    margin:2px;
+    border: 1px solid grey;
+    display:inline-block;
+}
+
+.letterjam-clueviewer{
+    padding:10px;
+    margin:2px;
+    border: 1px solid grey;
+    display:inline-block;
+}
+
+.letterjam-letter{
+    width:.75em;
+    height:1.5em;
+}
+
+.letterjam-cluehelper-guess{
+    width:2em;
+}
+
+.letterjam-letter-player-0{
+    background-color:#BBCCEE;
+    color:#222255;
+}
+
+.letterjam-letter-player-1{
+    background-color:#CCEEFF;
+    color:#225555;
+}
+
+.letterjam-letter-player-2{
+    background-color:#CCDDAA;
+    color:#225522;
+}
+
+.letterjam-letter-player-3{
+    background-color:#EEEEBB;
+    color:#666633;
+}
+
+.letterjam-letter-clickable{
+    box-shadow:2px 2px;
+    cursor: pointer;
+}
+
+
+.letterjam-letter-player-4{
+    background-color:#FFCCCC;
+    color:#663333;
+}
+
+
+.letterjam-letter-player-5{
+    background-color:#DDDDDD;
+    color:#555555;
+}
+
+.letterjam-cluehelper-guessed-letter{
+    color:darkgray;
+}
+
+.letterjam-cluehelper td{
+    border:1px solid black;
+    border-radius:4px;
+    width:1em;
+    height:1.5em;
+    background-color:white;
+}
+
+.letterjam-cluehelper{
+    display:inline-block;
+    width:100%;
+    background-color:lightgrey;
+}
+
+
+.letterjam-clueviewer td{
+    border:1px solid black;
+    border-radius: 5px;
+    width:1em;
+    height:1.5em;
+}
+
+.letterjam-cluehelper-selector{
+    display:inline-block;
+    border:1px solid black;
+    padding:10px;
+}
+
+.letterjam-cluehelper-selector-tab{
+    display:inline-block;
+    width:5em;
+    border-top-left-radius: 20px 20px;
+    border-top-right-radius: 20px 20px;
+}
+
+.letterjam-cluehelper-selector-tab-selected{
+    background-color:lightgrey;
+}
