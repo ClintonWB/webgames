@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import './BucketOfPaper.css';
 import firebase from 'firebase';
+import {seeded_shuffle, random_seed} from '../../../lib/math.js';
 
 export default class BucketOfPaper extends Component {
     constructor(props) {
@@ -18,18 +19,6 @@ export default class BucketOfPaper extends Component {
             slip_suggestions: event.target.value,
         })
     }
-    
-    gcd(a,b) {
-        a = Math.abs(a);
-        b = Math.abs(b);
-        if (b > a) {var temp = a; a = b; b = temp;}
-        while (true) {
-            if (b === 0) return a;
-            a %= b;
-            if (a === 0) return b;
-            b %= a;
-        }
-    }
 
     submitSlips(){
         this.setState({
@@ -42,32 +31,41 @@ export default class BucketOfPaper extends Component {
     }
 
     startGame(){
-        var slipcount = this.props.gamedata.game.slips.length;
-        while(true){
-            var increment = Math.floor(Math.random()*slipcount);
-            if(this.gcd(slipcount,increment) === 1){
-                break;
-            }
-        }
+        let slipcount = this.props.gamedata.game.slips.length;
+        let seed = random_seed();
 
         this.props.gamedata.room_ref.update({
             "game.started":true,
             "game.slipcount":slipcount,
-            "game.slipsdrawn":0,
-            "game.slipincrement":increment,
+            "game.slipsdrawn":-1,
+            "game.seed":seed,
         });
     }
 
     drawSlip(){
-        var slipindex = ((this.props.gamedata.game.slipsdrawn+1)*
-                          this.props.gamedata.game.slipincrement)%
-                          this.props.gamedata.game.slipcount;
-        this.setState({
-            slip: this.props.gamedata.game.slips[slipindex],
-        })
-        this.props.gamedata.room_ref.update({
-            "game.slipsdrawn":firebase.firestore.FieldValue.increment(1),
-        })
+        let slipindex = this.props.gamedata.game.slipsdrawn+1;
+        if (slipindex < this.props.gamedata.game.slipcount){
+            let deck = seeded_shuffle(this.props.gamedata.game.slips,
+                                      this.props.gamedata.game.seed);                          
+            this.setState({
+              slip: deck[slipindex],
+            }) ;
+            this.props.gamedata.room_ref.update({
+                "game.slipsdrawn":firebase.firestore.FieldValue.increment(1),
+            });
+        } else {
+            slipindex = 0;
+            let seed = random_seed();
+            let deck = seeded_shuffle(this.props.gamedata.game.slips,
+                                      seed);                          
+            this.setState({
+              slip: deck[slipindex],
+            }) ;
+            this.props.gamedata.room_ref.update({
+                "game.slipsdrawn":0,
+                "game.seed":seed,
+            });
+        }
     }
     
     static initialize(){
@@ -90,6 +88,11 @@ export default class BucketOfPaper extends Component {
                 <h2> Bucket Of Paper Game </h2>
                 {this.props.gamedata.game.started?
                 <>
+                <div className="Slip Pool Display">
+                <p>
+                {this.props.gamedata.game.slipsdrawn+1} drawn out of {this.props.gamedata.game.slipcount} total. {this.props.gamedata.game.slipcount-this.props.gamedata.game.slipsdrawn-1} remain.
+                </p>
+                </div>
                 {this.state.slip?
                 <div className="bucketofpaper_slip">
                 {this.state.slip}
@@ -114,8 +117,7 @@ export default class BucketOfPaper extends Component {
                 <>
                 List your slips of paper, one per line.
                 <div>
-                <textarea  className="bucketofpaper_initial_input" onChange={this.updateSlips.bind(this)}>
-                    {this.state.slip_suggestions}
+                <textarea  className="bucketofpaper_initial_input" onChange={this.updateSlips.bind(this)} defaultValue={this.state.slip_suggestions}>
                 </textarea>
                 </div>
                 <div>
