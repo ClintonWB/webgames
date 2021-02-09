@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import logo from '../../images/logo.svg';
+//import logo from '../../images/logo.svg';
 import './App.css';
 import LoginForm from '../LoginForm/LoginForm.js';
 import GameSelector from '../GameSelector/GameSelector.js';
@@ -16,6 +16,7 @@ class App extends Component {
             game: null,
             room_ref: null,
             people: [],
+            host: null,
         }
     }
     
@@ -48,6 +49,7 @@ class App extends Component {
         this.setState({
             game: snapshot.get("game"),
             people: snapshot.get("players"),
+            host: snapshot.get("host"),
         })
     }
     
@@ -68,12 +70,13 @@ class App extends Component {
                     )}
                 </ul>
             </div>
-        :<div> No People, Not Even You.</div>
+        :<div> No People Found, Not Even You. Try Refreshing.</div>
         }
         <GameSelector gamedata={{user:this.state.user,
                                 game:this.state.game,
                                 room_ref:this.state.room_ref,
-                                people:this.state.people
+                                people:this.state.people,
+                                host:this.state.host
                                 }}
                                 />
       </div>

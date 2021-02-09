@@ -7,7 +7,7 @@ export default class LoginForm extends Component {
         super(props);
         this.state = {
             username_field: '',
-            room_id_field: '',
+            room_id_field: decodeURIComponent(window.location.pathname.slice(1)) || '',
             error_message: '',
         };
     }
@@ -108,6 +108,11 @@ export default class LoginForm extends Component {
         this.handleSend();
     }
     
+    copyLink(event){
+        let url = window.location.origin+"/"+encodeURIComponent(this.props.room_id);
+        navigator.clipboard.writeText(url);
+    }
+    
     render() {
         return (
         <div>
@@ -139,7 +144,11 @@ export default class LoginForm extends Component {
             ) : (
             <div>
                 <span>
-                    Name: {this.state.username_field} Room ID: {this.props.room_id}
+                    Name: {this.state.username_field} Room ID: {this.props.room_id} 
+                <button
+                  className="app__button"
+                  onClick={this.copyLink.bind(this)}
+                > Copy Link </button>
                 </span>
             <button
               className="app__button"
