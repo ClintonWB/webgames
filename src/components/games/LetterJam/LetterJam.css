@@ -14,16 +14,13 @@
 }
 
 .letterjam-clueviewer{
-    padding:10px;
-    margin:2px;
-    border: 1px solid grey;
-    display:inline-block;
 }
 
 .letterjam-letter{
     width:.75em;
     height:1.5em;
 }
+
 
 .letterjam-cluehelper-guess{
     width:2em;
@@ -66,6 +63,14 @@
     color:#555555;
 }
 
+.letterjam-cluearea>div{
+    display:inline-block;
+    vertical-align:top;
+    margin:2px;
+    border: 1px solid grey;
+    padding:10px;
+}
+
 .letterjam-cluehelper-guessed-letter{
     color:darkgray;
 }
@@ -80,10 +85,15 @@
 
 .letterjam-cluehelper{
     display:inline-block;
-    width:100%;
     background-color:lightgrey;
+    width:100%;
+}
+.letterjam-cluehelper-internal{
+    margin:10px;
 }
 
+.letterjam-cluehelper-selector-internal{
+}
 
 .letterjam-clueviewer td{
     border:1px solid black;
@@ -95,16 +105,72 @@
 .letterjam-cluehelper-selector{
     display:inline-block;
     border:1px solid black;
-    padding:10px;
+}
+
+.letterjam-cluehelper-selector-bar{
+    display:flex;
+    min-width:25em;
 }
 
 .letterjam-cluehelper-selector-tab{
     display:inline-block;
-    width:5em;
+    flex-grow:1;
+    max-width:5em;
+    min-width:3em;
+    width:20%;
     border-top-left-radius: 20px 20px;
     border-top-right-radius: 20px 20px;
+    background-color:#EEEEEE;
 }
 
 .letterjam-cluehelper-selector-tab-selected{
     background-color:lightgrey;
+}
+
+.letterjam-card-row{
+    border:1px solid black;
+    display:table;
+    align:center;
+    margin-left:auto;
+    margin-right:auto;
+    border-spacing:5px;
+}
+
+.letterjam-card-row>div{
+    display:table-cell;
+    vertical-align:center;
+    border: 1px solid black;
+    margin:5px;
+    border-radius:5px;
+    padding:5px;
+}
+
+
+.letterjam-playersdisplay{
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.letterjam-proposalbuilder{
+    width:60%;
+    margin-left:auto;
+    margin-right:auto;
+    border:1px solid black;
+}
+
+.letterjam-proposalbuilder .letterjam-proposalinfo{
+    float:right;
+    border-left:1px solid black;
+    height:100%;
+    padding:5px;
+}
+
+.letterjam-proposalbuilder-end{
+    display:block;
+    clear:both;
+}
+
+.letterjam p{
+    margin-top:0px;
+    margin-bottom:0px;
 }

@@ -25,7 +25,7 @@ export default class LetterJam extends Component {
     render() {
         var game = this.props.gamedata.game;
         return (
-        <>
+        <div className="letterjam">
             <div className="WhoSaidWhat game">
             <h2> Letter Jam </h2>  
             <h3> A game of spelling words that do not have the letters J,Q,V,X, or Z in them.</h3>              
@@ -33,13 +33,24 @@ export default class LetterJam extends Component {
                 !game.started?
                 <LetterJamSetup gamedata={this.props.gamedata}/>
                 :
+                <>
+                {(this.props.gamedata.user.uid in game.players)?
                 <LetterJamPlay gamedata={this.props.gamedata}/>
+                :
+                <div>
+                Letter Jam Game in progress. Spectator mode not yet implemented; please wait until the game is finished.
+                </div>
                 }
+                </>
+            }
+            
             </div>
-        
-        
-        <button onClick={this.endGame.bind(this)}>End Game </button>
-        </>
+            {this.props.gamedata.user.uid === this.props.gamedata.host?
+            <button onClick={this.endGame.bind(this)}>End Game </button>
+            :
+            <></>
+            }
+        </div>
         
         );
     }
@@ -185,7 +196,7 @@ class LetterJamSetup extends Component {
 class LetterJamPlay extends Component {
     constructor(props) {
         super(props)
-        let uid = this.props.gamedata.user.uid;
+//        let uid = this.props.gamedata.user.uid;
         let game = props.gamedata.game;
         this.state = {
             proposal: [],
@@ -227,11 +238,13 @@ class LetterJamPlay extends Component {
         <div>
         Round {this.props.gamedata.game.round+1}
         </div>
-        <div>
-        <PlayersDisplay gamedata={this.props.gamedata} addCard={this.appendToProposal.bind(this)}/>
-        <ClueHelperSelector gamedata={this.props.gamedata}/>
-        <ProposalBuilder gamedata={this.props.gamedata} proposal={this.state.proposal} remove={this.removeFromProposal.bind(this)}/>
-        <ClueViewer gamedata={this.props.gamedata} />
+        <div className="letterjam-proposalarea">
+            <PlayersDisplay gamedata={this.props.gamedata} addCard={this.appendToProposal.bind(this)}/>
+            <ProposalBuilder gamedata={this.props.gamedata} proposal={this.state.proposal} remove={this.removeFromProposal.bind(this)}/>
+        </div>
+        <div className="letterjam-cluearea">
+            <ClueHelperSelector gamedata={this.props.gamedata}/>
+            <ClueViewer gamedata={this.props.gamedata} />
         </div>
         </>
         
@@ -283,40 +296,31 @@ class PlayersDisplay extends Component {
             <PlayerPanel gamedata={this.props.gamedata} addCard={this.props.addCard} uid={uid} index={index} key={uid}/>
         );
         
-        let npc_panels = game.npcs.map((npc,index) => <div className="letterjam-npcpanel letterjam-characterpanel" key={index}>
+        let npc_panels = game.npcs.map((npc,index) => <div className="letterjam-npcpanel letterjam-characterpanel" key={"npc_"+index}>
         <SelectableCard id={"N"+index+npc.current_letter} addCard={this.props.addCard} letter={npc.current_letter}/>
-         <div> NPC needs {npc.remaining_cards} clues. </div>
+         <p>NPC</p>
+         <p>needs {npc.remaining_cards} clues. </p>
         </div>);
         let bonus_letters = game.bonus_letters.map((letter,index) => 
-            <SelectableCard key={index} addCard={this.props.addCard} id={"B"+index+letter} letter={letter}/>
+            <div  key={"bonus_"+index} className="letterjam-bonus">
+            <SelectableCard addCard={this.props.addCard} id={"B"+index+letter} letter={letter}/>
+            <p>Bonus</p>
+            </div>
         );
         return (
-        <>
-        <p>
-        Players:
-        </p>
-        <div>
-        {player_panels}
+        <div className="letterjam-playersdisplay">
+        <div className="letterjam-card-row">
+                {player_panels}
+                {npc_panels}
+            <div key="wild" className="letterjam-wildcard-block">
+                <div className="letterjam-wild">
+                <SelectableCard addCard={this.props.addCard} id={"***"} letter={"*"}/>
+                <p> Wild</p>
+                </div>
+            </div>
+                {bonus_letters}
         </div>
-        <p>
-        NPCs:
-        </p>
-        {npc_panels}
-        <div className="letterjam-wildcard-block">
-        <p>
-        Wild Card:
-        </p>
-        <SelectableCard addCard={this.props.addCard} id={"***"} letter={"*"}/>
         </div>
-        {bonus_letters.length>0?
-        <div className="letterjam-bonusletter-block">
-        <p>
-        Bonus Letters:
-        </p> 
-        {bonus_letters}
-        </div>
-        :<></>}
-        </>
         
         );
     }
@@ -391,8 +395,6 @@ class PlayerPanel extends Component {
             game.bonus_letters.splice(bonus_index,1);
         }
         
-        console.log(game);
-        
         this.props.gamedata.room_ref.update({
             game: game,
         });
@@ -402,23 +404,6 @@ class PlayerPanel extends Component {
         var game = this.props.gamedata.game;
         var target_player = this.props.gamedata.game.players[this.props.uid];
         var is_me = (this.props.uid === this.props.gamedata.user.uid);
-        
-        var display_row = target_player.target_letters.map((letter,position)=>
-                <div key={position} className={"letterjam-letter letterjam-letter-facedown letterjam-letter-player-"+this.props.index}>_</div>);
-        
-        if(is_me){
-            display_row[target_player.letter_position]=<div 
-                        key={target_player.letter_position} 
-                        className={"letterjam-letter letterjam-letter-faceup letterjam-letter-mystery letterjam-letter-player-"+this.props.index}
-                        >?</div>;
-        } else {
-            display_row[target_player.letter_position]=<SelectableCard
-                        addCard={this.props.addCard}
-                        key={target_player.letter_position}
-                        id={"".concat(this.props.index,target_player.letter_position,target_player.current_letter)}
-                        letter={target_player.current_letter}/>
-
-        }
                 
         let vote_count = 0;
         for (let player_data of Object.values(game.players)){
@@ -447,14 +432,27 @@ class PlayerPanel extends Component {
         // Common Setup
         return (<>
         <div className="letterjam-playerpanel letterjam-characterpanel">
-        <div className="letterjam-playerpanel-name">
-        {this.props.gamedata.people[this.props.uid]}
-        </div>
         <div className="letterjam-playerpanel-word">
-        {display_row}
+        {is_me?
+        <div key={"Player_"+this.props.index} 
+            className={"letterjam-letter letterjam-letter-faceup letterjam-letter-player-"+this.props.index}>
+                        ?
+                    </div>
+                                :
+        <SelectableCard
+                    addCard={this.props.addCard}
+                    key={target_player.letter_position}
+                    id={"".concat(this.props.index,target_player.letter_position,target_player.current_letter)}
+                    letter={target_player.current_letter}/>
+                }
         </div>
+        <p className="letterjam-playerpanel-name">
+        {this.props.gamedata.people[this.props.uid]}
+        </p>
         <div className="letterjam-advance-block">
             <>
+            <p> Letter {target_player.letter_position+1} of {target_player.target_letters.length}.
+            </p>
             {target_player.can_move_on?
                 <>
                 <p>Can advance.</p>
@@ -501,7 +499,6 @@ class ClueHelperSelector extends Component{
     
     switchToTab(event){
         let new_tab = parseInt(event.target.getAttribute("number"));
-        console.log(new_tab);
         this.setState({
             letter_position:new_tab,
         })
@@ -517,13 +514,20 @@ class ClueHelperSelector extends Component{
                 {index+1}
             </div>
         )
+        let helpers = Array(this.state.max_letter_position+1).fill(0).map(
+            (_,index) =>
+            <ClueHelper gamedata={this.props.gamedata} key={index} letter_position={index} visible_position={this.state.letter_position}/>
+        )
+        
         
         return(
         <div className="letterjam-cluehelper-selector">
+        <div className="letterjam-cluehelper-selector-internal">
         <div className="letterjam-cluehelper-selector-bar">
         {tabs}
         </div>
-        <ClueHelper gamedata={this.props.gamedata} key={this.state.letter_position} letter_position={this.state.letter_position}/>
+        {helpers}
+        </div>
         </div>
         )
     }
@@ -535,13 +539,14 @@ class ClueHelper extends Component{
         let uid = props.gamedata.user.uid;
         let player =  props.gamedata.game.players[uid];
         this.state = {
-            guess:this.props.letter_guesses || "",
+            guess:player.letter_guesses[props.letter_position] || "",
         }
     }
     
     advancePlayer(event){
         let game = this.props.gamedata.game;
         let uid = this.props.gamedata.user.uid;
+        game.players[uid].letter_guesses[game.players[uid].letter_position]=this.state.guess;
         game.players[uid].letter_position++;
         if(game.players[uid].letter_position<game.players[uid].target_letters.length){
             game.players[uid].current_letter = game.players[uid].target_letters[game.players[uid].letter_position];
@@ -560,7 +565,7 @@ class ClueHelper extends Component{
         let game = this.props.gamedata.game;
         let uid = this.props.gamedata.user.uid;
         game.players[uid].letter_position++;
-        if(this.state.bonus_guess.toUpperCase() === game.players[uid].current_letter){
+        if(this.state.guess.toUpperCase() === game.players[uid].current_letter){
             game.bonus_letters.push(game.players[uid].current_letter);
         }
         game.players[uid].current_letter = game.deck[game.deck_position++];
@@ -590,6 +595,9 @@ class ClueHelper extends Component{
     }
     
     render(){
+        if(this.props.letter_position !== this.props.visible_position){
+            return(<></>);
+        }
         let my_uid = this.props.gamedata.user.uid;
         let target_player = this.props.gamedata.game.players[my_uid];
         let clue_rows = [];
@@ -616,6 +624,7 @@ class ClueHelper extends Component{
         
         
         return(<div className="letterjam-cluehelper">
+        <div className="letterjam-cluehelper-internal">
         <p>
         Clue Helper
         </p>
@@ -642,6 +651,7 @@ class ClueHelper extends Component{
         :
         <>
         </>}
+        </div>
         </div>);
     }
 }
@@ -724,15 +734,18 @@ class ProposalBuilder extends Component {
         )
 
         return(
-            <div>
+            <div className="letterjam-proposalbuilder">
+            <ProposalAnalysis proposal={this.props.proposal}/>
+            <div className="letterjam-proposalbuilder-core">
             <p>
             Proposal Builder
             </p>
             <div>
             {proposal_cards}
             </div>
-            <ProposalAnalysis proposal={this.props.proposal}/>
             <button onClick={this.submitProposal.bind(this)}>Propose Clue</button>
+            </div>
+            <div className="letterjam-proposalbuilder-end"></div>
             </div>);
     }
 }
@@ -786,7 +799,7 @@ class ClueViewer extends Component {
         clue_rows.reverse();
         return(<div className="letterjam-clueviewer">
             <p>
-            Clue Viewer
+            Clue History
             </p>
             <table>
             <thead>
