@@ -471,9 +471,11 @@ class LetterJamFinals extends Component {
         
         return (<>
             {player.final_word?
+                <>
                 <p>
                 Congratulations! The game is over, at least for you.
                 </p>
+                </>
             :
             <>
             <div>
@@ -511,6 +513,9 @@ class LetterJamFinals extends Component {
             </>
             }
             <FinalWordList gamedata={this.props.gamedata} />
+            {player.final_word?
+                <ClueRetrospective gamedata={this.props.gamedata}/>
+                :<></>}
             </>
         );
     }
@@ -1108,7 +1113,6 @@ class ProposalBuilderCard extends Component {
 }
 
 class ClueViewer extends Component {
-    
     render() {
         let clues = this.props.gamedata.game.players[this.props.gamedata.user.uid].clues_received;
         
@@ -1122,6 +1126,33 @@ class ClueViewer extends Component {
         return(<div className="letterjam-clueviewer">
             <p>
             Clue History
+            </p>
+            <table>
+            <thead>
+            <tr><th></th>
+            {clue_header}
+            </tr>
+            </thead>
+            <tbody>
+            {clue_rows}
+            </tbody>
+            </table>
+            </div>);
+    }
+}
+
+class ClueRetrospective extends Component {        
+    render() {
+        let clues = this.props.gamedata.game.clues;
+        let max_clue_length = Math.max(5,...clues.map(clue=>(clue.length+1)/4));
+        let clue_header = Array(max_clue_length).fill(1).map((_,index)=><th key={index}>{index+1}</th>);
+        let clue_rows = clues.map((clue,row_index)=>{
+            let clue_row = clue.split(' ').map((x,letter_index)=><td key={letter_index}>{x[2]}</td>);
+            return <tr key={row_index}><th>{row_index+1}</th>{clue_row}</tr>;
+        });
+        return(<div className="letterjam-clueviewer">
+            <p>
+            Clues in the game:
             </p>
             <table>
             <thead>
