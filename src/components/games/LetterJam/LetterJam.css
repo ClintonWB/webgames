@@ -174,3 +174,33 @@
     margin-top:0px;
     margin-bottom:0px;
 }
+
+.letterjam-finalwordlist{
+    border:1px solid black;
+    padding:5px;
+    margin:5px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.letterjam-finals-pool{
+    border: 1px solid black;
+    min-width:300px;
+    min-height:70px;
+    width:fit-content;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+    
+}
+
+.letterjam-finals-word{
+    border: 1px solid black;
+    min-width:300px;
+    min-height:70px;
+    width:fit-content;
+    padding:5px;
+    margin-left:auto;
+    margin-right:auto;
+}

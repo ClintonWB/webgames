@@ -12,6 +12,7 @@ export default class LetterJam extends Component {
                 type:"Letter Jam",
                 players:[],
                 started:false,
+                finals:false,
             }
         });
     }
@@ -31,16 +32,22 @@ export default class LetterJam extends Component {
             <h3> A game of spelling words that do not have the letters J,Q,V,X, or Z in them.</h3>              
                 {
                 !game.started?
-                <LetterJamSetup gamedata={this.props.gamedata}/>
+                    <LetterJamSetup gamedata={this.props.gamedata}/>
                 :
-                <>
-                {(this.props.gamedata.user.uid in game.players)?
-                <LetterJamPlay gamedata={this.props.gamedata}/>
-                :
-                <div>
-                Letter Jam Game in progress. Spectator mode not yet implemented; please wait until the game is finished.
-                </div>
-                }
+                    <>
+                    {(this.props.gamedata.user.uid in game.players)?
+                        <>
+                        {this.props.gamedata.game.finals?
+                            <LetterJamFinals gamedata={this.props.gamedata}/>
+                        :
+                            <LetterJamPlay gamedata={this.props.gamedata}/>
+                        }
+                        </>
+                    :
+                        <div>
+                        Letter Jam Game in progress. Spectator mode not yet implemented; please wait until the game is finished.
+                        </div>
+                    }
                 </>
             }
             
@@ -232,23 +239,300 @@ class LetterJamPlay extends Component {
         })
     }
     
+    voteToEnd(event){
+        let game = this.props.gamedata.game;
+        let uid = this.props.gamedata.user.uid;
+        if(Object.keys(game.players)
+            .filter(x=>x!==uid)
+            .every(x=>game.players[x].ready_to_end)){
+                let bonus_letters = game.bonus_letters.slice();
+                bonus_letters.push("*");
+                this.props.gamedata.room_ref.update({
+                    ["game.players."+uid+".ready_to_end"]: true,
+                    "game.finals":true,
+                    "game.bonus_letters":bonus_letters,
+                });
+                
+        } else {
+            this.props.gamedata.room_ref.update({
+                ["game.players."+uid+".ready_to_end"]: true,
+            });
+        }
+    }
+    
+    unvoteToEnd(event){
+        let uid = this.props.gamedata.user.uid;
+        {
+            this.props.gamedata.room_ref.update({
+                ["game.players."+uid+".ready_to_end"]: false,
+            });
+        }
+    }
+    
     render() {
-        return (
-        <>
-        <div>
-        Round {this.props.gamedata.game.round+1}
-        </div>
-        <div className="letterjam-proposalarea">
-            <PlayersDisplay gamedata={this.props.gamedata} addCard={this.appendToProposal.bind(this)}/>
-            <ProposalBuilder gamedata={this.props.gamedata} proposal={this.state.proposal} remove={this.removeFromProposal.bind(this)}/>
-        </div>
-        <div className="letterjam-cluearea">
-            <ClueHelperSelector gamedata={this.props.gamedata}/>
-            <ClueViewer gamedata={this.props.gamedata} />
-        </div>
-        </>
+        let game = this.props.gamedata.game;
+        let turn_limits = jam_facts.turn_limits[Object.keys(game.players).length];
+    
+        let free_turns = turn_limits.default;
+        let npcs_unfinished = 0;
+        for(let npc of game.npcs){
+            if(npc.remaining_cards === 0){
+                free_turns++;
+            } else {
+                npcs_unfinished++;
+            }
+        }
         
+        let unfinished_players = Object.keys(game.players).filter(
+            uid => game.players[uid].clues_given.length < turn_limits.per_player
         );
+        
+        let player_clues_remaining = unfinished_players.map(
+            uid=>turn_limits.per_player-game.players[uid].clues_given.length
+        ).reduce((x,y)=>x+y,0);
+        
+        if(unfinished_players.length === 0){
+            free_turns += turn_limits.clear_bonus;
+        }
+        
+        free_turns -= game.round;
+        free_turns += Object.keys(game.players).length*turn_limits.per_player-player_clues_remaining;
+        
+        let able_to_play = ((free_turns >0) ||
+            (unfinished_players.indexOf(this.props.gamedata.user.uid) !== -1));
+        
+        let out_of_turns = (player_clues_remaining+free_turns === 0);
+        let everyone_on_bonus = Object.values(game.players).every(
+            player=>player.letter_position >= player.target_letters.length
+        ) 
+        
+        return (
+            <>
+            <div>
+            Round {game.round+1}
+            </div>
+            <div>
+            <p>
+            Free clues left: {free_turns}
+            </p>
+            {unfinished_players.length>0?
+            <p>
+            Player-specific clues left: {player_clues_remaining}
+            </p>
+            :<></>}
+            {npcs_unfinished>0?
+            <p>
+            {npcs_unfinished} clue(s) can be earned from NPCs.
+            </p>
+            :<></>}
+            {unfinished_players.length>0?
+            <p>
+            {turn_limits.clear_bonus} clue(s) can be earned from giving all player-specific clues.
+            </p>
+            :<></>}
+            </div>
+            <div className="letterjam-finalvoting">
+            {everyone_on_bonus || out_of_turns?
+                <>
+            {everyone_on_bonus?<p>Everyone has moved on past their provided words.</p>:<></>}
+            {out_of_turns?<p>Nobody can give a clue.</p>:<></>}
+            <p> Are you ready for the final phase? </p>
+            {this.props.gamedata.game.players[this.props.gamedata.user.uid].ready_to_end?
+                <button onClick={this.unvoteToEnd.bind(this)}>Unvote to End</button>
+                    :
+            <button onClick={this.voteToEnd.bind(this)}>Vote to End</button>
+            }  
+            </>
+            :<></>}
+            </div>
+            
+            <div className="letterjam-proposalarea">
+                <PlayersDisplay gamedata={this.props.gamedata}
+                    addCard={this.appendToProposal.bind(this)}
+                    />
+                <ProposalBuilder 
+                    gamedata={this.props.gamedata}
+                    proposal={this.state.proposal}
+                    remove={this.removeFromProposal.bind(this)}
+                    able_to_play={able_to_play}
+                    />
+            </div>
+            <div className="letterjam-cluearea">
+                <ClueHelperSelector gamedata={this.props.gamedata}/>
+                <ClueViewer gamedata={this.props.gamedata} />
+            </div>
+            </>
+        );
+    }
+}
+
+class LetterJamFinals extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            final_guess:[],
+        }
+    }
+    
+    
+    static getDerivedStateFromProps(props, state){
+        let bonus_letters = props.gamedata.game.bonus_letters.slice();
+        for (let guess_letter of state.final_guess){
+            if (/^\d$/.test(guess_letter)){
+                continue;
+            }
+            let bonus_index = bonus_letters.indexOf(guess_letter);
+            if(bonus_index === -1){
+                state.final_guess = [];
+                return state;
+            }
+            bonus_letters.splice(bonus_index,1);
+        }
+        
+        return state;
+    }
+    
+    addLetter(event){
+        let final_guess = this.state.final_guess.slice();
+        final_guess.push(event.target.getAttribute("letter"));
+        this.setState({
+            final_guess:final_guess,
+        });
+    }
+    
+    removeLetter(event){
+        let final_guess = this.state.final_guess.slice();
+        let index = parseInt(event.target.getAttribute("position"));
+        final_guess.splice(index,1);
+        this.setState({
+            final_guess:final_guess,
+        });
+    }
+    
+    submitFinalWord(event){
+        let bonus_letters = this.props.gamedata.game.bonus_letters.slice();
+        let uid = this.props.gamedata.user.uid;
+        let player =  this.props.gamedata.game.players[uid];
+        for (let guess_letter of this.state.final_guess){
+            if (/^\d$/.test(guess_letter)){
+                continue;
+            }
+            let bonus_index = bonus_letters.indexOf(guess_letter);
+            bonus_letters.splice(bonus_index,1);
+        }
+        let final_word = this.state.final_guess.join("").replace(
+            /\d/g,
+            (x)=> player.target_letters[parseInt(x)]
+        )
+        
+        
+        this.props.gamedata.room_ref.update({
+            ["game.players."+this.props.gamedata.user.uid+".final_word"]: final_word,
+            "game.bonus_letters":bonus_letters,
+        });
+        
+    }
+    
+    render(){
+        let game = this.props.gamedata.game;
+        let uid = this.props.gamedata.user.uid;
+        let player =  game.players[uid];
+        let bonus_letters = game.bonus_letters.slice();
+        let player_pool = Array(player.target_letters.length)
+                            .fill(1)
+                            .map((_,index)=>index);
+        
+        for (let guess_letter of this.state.final_guess){
+            if (/^\d$/.test(guess_letter)){
+                player_pool.splice(player_pool.indexOf(parseInt(guess_letter)),1);
+            } else {
+                let bonus_index = bonus_letters.indexOf(guess_letter);
+                bonus_letters.splice(bonus_index,1);
+            }
+        }
+        let letter_pool = player_pool.map((x,index) =>
+            <div key={"player_"+index} letter={x} onClick={this.addLetter.bind(this)} className={"letterjam-letter letterjam-letter-clickable letterjam-letter-player-"+parseInt(x)} >{player.letter_guesses[parseInt(x)]||(parseInt(x)+1).toString()}</div>
+        ).concat(bonus_letters.map((x,index)=>
+            <div key={"bonus_"+index} letter={x} onClick={this.addLetter.bind(this)} className="letterjam-letter letterjam-letter-clickable" >{x}</div>
+        ));
+        
+        let guess_word = this.state.final_guess.map((x,index) => {
+            if (/^\d$/.test(x)){
+                return <div key={"player_"+index}
+                            position={index}
+                            onClick={this.removeLetter.bind(this)}
+                            className={"letterjam-letter letterjam-letter-clickable letterjam-letter-player-"+parseInt(x)} >{player.letter_guesses[parseInt(x)]||(parseInt(x)+1).toString()}</div>
+            } else {
+                return <div key={"bonus_"+index}
+                            position={index}
+                            onClick={this.removeLetter.bind(this)}
+                            className="letterjam-letter letterjam-letter-clickable" >{x}</div>
+            }});
+        
+        return (<>
+            {player.final_word?
+                <p>
+                Congratulations! The game is over, at least for you.
+                </p>
+            :
+            <>
+            <div>
+            <p>
+            The game is almost over.
+            </p>
+            <p>
+            Your last task is to spell a 5+ letter word, using your secret letters and any bonus letters or the wild.
+            </p> 
+            <p>
+            However, unlike in previous rounds, each letter <em>including the wild</em> can be used <em>only once, by one player</em>.
+            </p> 
+            <p>
+            If a player uses a bonus letter in their word, it dissapears for everyone.
+            </p>
+            </div>
+            <div className="letterjam-finals-pool">
+            <p> Letter Pool: </p>
+            <div>
+            {letter_pool}
+            </div>
+            </div>
+            <div className="letterjam-finals-word">
+            <p> Final Word: </p>
+            <div>
+            {guess_word}
+            </div>
+            </div>
+            <div>
+            <button onClick={this.submitFinalWord.bind(this)} disabled={this.state.final_guess.length<player.target_letters.length}>Submit Final Guess</button> 
+            </div>
+            <div>
+            <ClueHelperSelector gamedata={this.props.gamedata} />
+            </div>
+            </>
+            }
+            <FinalWordList gamedata={this.props.gamedata} />
+            </>
+        );
+    }
+}
+
+class FinalWordList extends Component {
+    render(){
+        let player_finals = [];
+        for(let uid in this.props.gamedata.game.players){
+            let name = this.props.gamedata.people[uid];
+            let player = this.props.gamedata.game.players[uid];
+            if (player.final_word){
+                player_finals.push(<div key={uid} className="letterjam-final-presentation">
+            <p>
+            {name} spelled {player.final_word}; Their original word was {player.target_word}.
+            </p>
+            </div>)
+            } 
+        }
+        return(<div className="letterjam-finalwordlist">
+            {player_finals}
+        </div>)
     }
 }
 
@@ -299,7 +583,9 @@ class PlayersDisplay extends Component {
         let npc_panels = game.npcs.map((npc,index) => <div className="letterjam-npcpanel letterjam-characterpanel" key={"npc_"+index}>
         <SelectableCard id={"N"+index+npc.current_letter} addCard={this.props.addCard} letter={npc.current_letter}/>
          <p>NPC</p>
+         {npc.remaining_cards !== 0?
          <p>needs {npc.remaining_cards} clues. </p>
+         :<></>}
         </div>);
         let bonus_letters = game.bonus_letters.map((letter,index) => 
             <div  key={"bonus_"+index} className="letterjam-bonus">
@@ -428,6 +714,8 @@ class PlayerPanel extends Component {
                 :<></>}
             </>:<></>}</>
         
+        let turn_limits = jam_facts.turn_limits[Object.keys(game.players).length];
+        let player_clues_remaining = Math.max(0,turn_limits.per_player-target_player.clues_given.length);
         
         // Common Setup
         return (<>
@@ -449,6 +737,11 @@ class PlayerPanel extends Component {
         <p className="letterjam-playerpanel-name">
         {this.props.gamedata.people[this.props.uid]}
         </p>
+        {player_clues_remaining>0?
+            <p>
+            {player_clues_remaining} player clues left.
+            </p>
+        :<></>}
         <div className="letterjam-advance-block">
             <>
             <p> Letter {target_player.letter_position+1} of {target_player.target_letters.length}.
@@ -478,9 +771,18 @@ class ClueHelperSelector extends Component{
         super(props)
         let uid = props.gamedata.user.uid;
         let player =  props.gamedata.game.players[uid];
-        this.state = {
-            letter_position:player.letter_position,
-            max_letter_position:player.letter_position,
+        if(props.gamedata.game.finals){
+            let position = Math.min(player.letter_position,
+                                    player.target_letters.length-1);
+            this.state = {
+                letter_position:position,
+                max_letter_position:position,
+            } 
+        } else {
+            this.state = {
+                letter_position:player.letter_position,
+                max_letter_position:player.letter_position,
+            }
         }
     }
     
@@ -488,7 +790,8 @@ class ClueHelperSelector extends Component{
     static getDerivedStateFromProps(props, state){
         let uid = props.gamedata.user.uid;
         let player =  props.gamedata.game.players[uid];
-        if(state.max_letter_position !== player.letter_position){
+        if(!props.gamedata.game.finals && 
+            state.max_letter_position !== player.letter_position){
             state = {
                 letter_position:player.letter_position,
                 max_letter_position:player.letter_position,
@@ -594,6 +897,16 @@ class ClueHelper extends Component{
         })
     }
     
+    pushGuess(event){
+        let uid = this.props.gamedata.user.uid;
+        let player =  this.props.gamedata.game.players[uid];
+        let guesses = player.letter_guesses;
+        guesses[this.props.letter_position] = this.state.guess;
+        this.props.gamedata.room_ref.update({
+            ["game.players."+this.props.gamedata.user.uid+".letter_guesses"]: guesses,
+        });
+    }
+    
     render(){
         if(this.props.letter_position !== this.props.visible_position){
             return(<></>);
@@ -633,8 +946,12 @@ class ClueHelper extends Component{
             {clue_rows}
             </tbody>
         </table>
-        <input className="letterjam-cluehelper-guess" onChange={this.updateGuess.bind(this)} defaultValue={this.state.guess} maxLength="1"></input>
-        {target_player.can_move_on && this.props.letter_position === target_player.letter_position?
+        <input className="letterjam-cluehelper-guess"
+            onChange={this.updateGuess.bind(this)}
+            onBlur={this.pushGuess.bind(this)}
+            defaultValue={this.state.guess} maxLength="1"
+            ></input>
+        {!this.props.gamedata.finals && target_player.can_move_on && this.props.letter_position === target_player.letter_position?
         <>
         {target_player.letter_position<target_player.target_letters.length?
         <button onClick={this.advancePlayer.bind(this)}>Advance</button>
@@ -704,6 +1021,9 @@ class ProposalAnalysis extends Component{
 class ProposalBuilder extends Component {
     
     submitProposal(event){
+        if (!this.props.able_to_play){
+            return;
+        }
         let players = Object.assign({},this.props.gamedata.game.players);
         let my_uid = this.props.gamedata.user.uid;
         if(players[my_uid].proposed_clue.join("") === this.props.proposal.join("")){
@@ -743,7 +1063,9 @@ class ProposalBuilder extends Component {
             <div>
             {proposal_cards}
             </div>
-            <button onClick={this.submitProposal.bind(this)}>Propose Clue</button>
+            <button onClick={this.submitProposal.bind(this)} 
+                disabled={!this.props.able_to_play}
+                >Propose Clue</button>
             </div>
             <div className="letterjam-proposalbuilder-end"></div>
             </div>);
