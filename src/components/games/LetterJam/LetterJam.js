@@ -116,7 +116,7 @@ class LetterJamSetup extends Component {
                 target_word:shuffled_words[i],
                 target_letters:seeded_shuffle(shuffled_words[i].split('')),
                 letter_position:0,
-                letter_guesses:["?","?","?","?","?"],
+                letter_guesses:[],
                 clues_given:[],
                 clues_received:[],
                 passed_move_on:false,
