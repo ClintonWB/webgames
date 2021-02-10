@@ -28,8 +28,8 @@ export default class WhoSaidWhat extends Component {
     render() {
         var game = this.props.gamedata.game;
         var people = this.props.gamedata.people;
-        var user = this.props.gamedata.user;
-        var is_my_turn = (game.current_player === user.uid);
+//        var user = this.props.gamedata.user;
+//        var is_my_turn = (game.current_player === user.uid);
         return (
         <>
             <div className="WhoSaidWhat game">
@@ -98,7 +98,7 @@ class GameSetup extends Component{
     submitStatement(){
         
         var position=0;
-        if(typeof(this.props.gamedata.game.players) !== "Undefined"){
+        if(typeof(this.props.gamedata.game.players) !== "undefined"){
             position = Object.keys(this.props.gamedata.game.players).length;
         }
         
@@ -194,7 +194,7 @@ class GamePlay extends Component {
     
     guess_row(){
         var game = this.props.gamedata.game;
-        var people = this.props.gamedata.people;
+//        var people = this.props.gamedata.people;
         var user = this.props.gamedata.user;
         if (game.current_player !== user.uid){
             return false;
