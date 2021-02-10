@@ -16,6 +16,8 @@
 
 firebase-debug.log
 
+exploration.py
+
 # misc
 .DS_Store
 .env.local
