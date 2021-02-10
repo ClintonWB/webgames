@@ -43,6 +43,7 @@ class App extends Component {
             room_ref: room_ref,
         })
         room_ref.onSnapshot(this.onRoomChange.bind(this));
+        window.history.pushState({},"Change URL",window.location.origin+"/"+encodeURIComponent(room_id));
     }
 
     onRoomChange(snapshot){
@@ -65,7 +66,7 @@ class App extends Component {
             <div className="player__list">
                 People:
                 <ul>
-                    { Object.keys(this.state.people).map((pid) =>
+                    { Object.keys(this.state.people).sort().map((pid) =>
                         <li key={pid}> {this.state.people[pid]} </li>
                     )}
                 </ul>
