@@ -17,6 +17,7 @@ class App extends Component {
             room_ref: null,
             people: [],
             host: null,
+            collapsed:false,
         }
     }
     
@@ -54,6 +55,12 @@ class App extends Component {
         })
     }
     
+    togglePlayerList(event){
+        this.setState({
+            collapsed:!this.state.collapsed,
+        });
+    }
+    
     render() {
         return (
             <div className="app">
@@ -63,13 +70,19 @@ class App extends Component {
           </h2><LoginForm user={this.state.user} room_id={this.state.room_id} updateRoomID={this.enterRoom.bind(this)} />
         </div>
         {(typeof(this.state.people) !== "undefined" && this.state.people !== null)?
-            <div className="player__list">
+            <div className="player__list" onClick={this.togglePlayerList.bind(this)}>
+                {this.state.collapsed?
+                <>      
                 People:
                 <ul>
                     { Object.keys(this.state.people).sort().map((pid) =>
                         <li key={pid}> {this.state.people[pid]} </li>
                     )}
                 </ul>
+                </>:<>
+                Player List Collapsed. Click to reveal.
+                </>
+                }
             </div>
         :<div> No People Found, Not Even You. Try Refreshing.</div>
         }

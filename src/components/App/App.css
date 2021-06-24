@@ -35,6 +35,11 @@
   width:200px;
 }
 
+html {
+    height: auto !important;
+    padding-bottom: 700px !important;
+}
+
 .player__list li:nth-child(odd) {
   background-color: lightslategray;
 }
