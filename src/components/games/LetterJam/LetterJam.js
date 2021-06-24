@@ -70,7 +70,7 @@ class LetterJamSetup extends Component {
         }
     }
         
-    word_validator = /^[ABCDEFGHIKLMNOPRSTUWY]{5}$/;
+    word_validator = /^[ABCDEFGHIKLMNOPRSTUWY]{5,9}$/;
     
     updateWord(event){
         this.setState({
@@ -176,9 +176,12 @@ class LetterJamSetup extends Component {
             </p>
             <p> If you cannot think of one, you can let the computer choose a random simple english word meeting these criteria.
             </p>
-            <input className="letterjam-word-input" onChange={this.updateWord.bind(this)} defaultValue={this.state.word} maxLength="5"></input>
+            <input className="letterjam-word-input" 
+                   onChange={this.updateWord.bind(this)}
+                   defaultValue={this.state.word} maxLength="9"></input>
             </div><div>
-            <button onClick={this.submitWord.bind(this)}> Submit Word </button> <button onClick={this.randomWord.bind(this)}>Get Random Valid Simple English Word</button>
+            <button onClick={this.submitWord.bind(this)}>Submit Word</button>
+            <button onClick={this.randomWord.bind(this)}>Get Random Valid Simple English Word</button>
             </div>
             </>
         )};
@@ -187,7 +190,8 @@ class LetterJamSetup extends Component {
         if (player_count < 2){
             return(<><div><p>Waiting on a second player to join.</p></div></>)
         }    
-        let player_names = Object.keys(game.players).map((uid) => <li key={uid}>{this.props.gamedata.people[uid]}</li>)
+        let player_names = Object.keys(game.players).map((uid) => 
+            <li key={uid}>{this.props.gamedata.people[uid]}</li>)
         return(<>
                 <div>
                     <p>Waiting for game to start.</p>
@@ -262,11 +266,9 @@ class LetterJamPlay extends Component {
     
     unvoteToEnd(event){
         let uid = this.props.gamedata.user.uid;
-        {
-            this.props.gamedata.room_ref.update({
-                ["game.players."+uid+".ready_to_end"]: false,
-            });
-        }
+        this.props.gamedata.room_ref.update({
+            ["game.players."+uid+".ready_to_end"]: false,
+        });
     }
     
     render() {
@@ -451,9 +453,19 @@ class LetterJamFinals extends Component {
             }
         }
         let letter_pool = player_pool.map((x,index) =>
-            <div key={"player_"+index} letter={x} onClick={this.addLetter.bind(this)} className={"letterjam-letter letterjam-letter-clickable letterjam-letter-player-"+parseInt(x)} >{player.letter_guesses[parseInt(x)]||(parseInt(x)+1).toString()}</div>
+            <div key={"player_"+index} 
+                 letter={x}
+                 onClick={this.addLetter.bind(this)}
+                 className={"letterjam-letter letterjam-letter-clickable letterjam-letter-player-"+parseInt(x)} >
+                 {player.letter_guesses[parseInt(x)]||(parseInt(x)+1).toString()}
+                 </div>
         ).concat(bonus_letters.map((x,index)=>
-            <div key={"bonus_"+index} letter={x} onClick={this.addLetter.bind(this)} className="letterjam-letter letterjam-letter-clickable" >{x}</div>
+            <div key={"bonus_"+index}
+            letter={x}
+            onClick={this.addLetter.bind(this)}
+            className="letterjam-letter letterjam-letter-clickable" >
+            {x}
+            </div>
         ));
         
         let guess_word = this.state.final_guess.map((x,index) => {
@@ -461,7 +473,9 @@ class LetterJamFinals extends Component {
                 return <div key={"player_"+index}
                             position={index}
                             onClick={this.removeLetter.bind(this)}
-                            className={"letterjam-letter letterjam-letter-clickable letterjam-letter-player-"+parseInt(x)} >{player.letter_guesses[parseInt(x)]||(parseInt(x)+1).toString()}</div>
+                            className={"letterjam-letter letterjam-letter-clickable letterjam-letter-player-"+parseInt(x)} >
+                            {player.letter_guesses[parseInt(x)]||(parseInt(x)+1).toString()}
+                            </div>
             } else {
                 return <div key={"bonus_"+index}
                             position={index}
@@ -505,7 +519,10 @@ class LetterJamFinals extends Component {
             </div>
             </div>
             <div>
-            <button onClick={this.submitFinalWord.bind(this)} disabled={this.state.final_guess.length<player.target_letters.length}>Submit Final Guess</button> 
+            <button onClick={this.submitFinalWord.bind(this)}
+                    disabled={this.state.final_guess.length<player.target_letters.length}>
+                    Submit Final Guess
+                    </button> 
             </div>
             <div>
             <ClueHelperSelector gamedata={this.props.gamedata} />
@@ -582,35 +599,47 @@ class PlayersDisplay extends Component {
         var game = this.props.gamedata.game;
         let player_panels = Object.keys(game.players).sort().map(
             (uid,index) => 
-            <PlayerPanel gamedata={this.props.gamedata} addCard={this.props.addCard} uid={uid} index={index} key={uid}/>
+            <PlayerPanel gamedata={this.props.gamedata}
+                addCard={this.props.addCard}
+                uid={uid}
+                index={index}
+                key={uid}/>
         );
         
-        let npc_panels = game.npcs.map((npc,index) => <div className="letterjam-npcpanel letterjam-characterpanel" key={"npc_"+index}>
-        <SelectableCard id={"N"+index+npc.current_letter} addCard={this.props.addCard} letter={npc.current_letter}/>
-         <p>NPC</p>
-         {npc.remaining_cards !== 0?
-         <p>needs {npc.remaining_cards} clues. </p>
-         :<></>}
+        let npc_panels = game.npcs.map((npc,index) => 
+        <div className="letterjam-npcpanel letterjam-characterpanel"
+            key={"npc_"+index}>
+            <SelectableCard id={"N"+index+npc.current_letter}
+                addCard={this.props.addCard}
+                letter={npc.current_letter}/>
+            <p>NPC</p>
+            {npc.remaining_cards !== 0?
+                <p>needs {npc.remaining_cards} clues. </p>
+            :<></>}
         </div>);
         let bonus_letters = game.bonus_letters.map((letter,index) => 
             <div  key={"bonus_"+index} className="letterjam-bonus">
-            <SelectableCard addCard={this.props.addCard} id={"B"+index+letter} letter={letter}/>
+            <SelectableCard addCard={this.props.addCard} 
+                id={"B"+index+letter}
+                letter={letter}/>
             <p>Bonus</p>
             </div>
         );
         return (
         <div className="letterjam-playersdisplay">
-        <div className="letterjam-card-row">
+            <div className="letterjam-card-row">
                 {player_panels}
                 {npc_panels}
-            <div key="wild" className="letterjam-wildcard-block">
-                <div className="letterjam-wild">
-                <SelectableCard addCard={this.props.addCard} id={"***"} letter={"*"}/>
-                <p> Wild</p>
+                <div key="wild" className="letterjam-wildcard-block">
+                    <div className="letterjam-wild">
+                    <SelectableCard addCard={this.props.addCard} 
+                        id={"***"}
+                        letter={"*"}/>
+                    <p> Wild</p>
+                    </div>
                 </div>
-            </div>
                 {bonus_letters}
-        </div>
+            </div>
         </div>
         
         );
